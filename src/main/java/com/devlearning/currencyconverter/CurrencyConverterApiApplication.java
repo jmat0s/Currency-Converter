@@ -10,4 +10,7 @@ public class CurrencyConverterApiApplication {
 		SpringApplication.run(CurrencyConverterApiApplication.class, args);
 	}
 
+
+	
+
 }

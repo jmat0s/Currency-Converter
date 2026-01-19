@@ -21,9 +21,7 @@ public class SecurityConfig {
                 .anyRequest().authenticated() // Exige login para todo o resto
             )
             // 2. Desabilitar proteção CSRF apenas para o H2
-            .csrf(csrf -> csrf
-                .ignoringRequestMatchers("/h2-console/**")
-            )
+            .csrf(csrf -> csrf.disable())
             // 3. Permitir Frames (necessário para o H2 Console funcionar)
             .headers(headers -> headers
                 .frameOptions(frame -> frame.sameOrigin())
