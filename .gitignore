@@ -1,11 +1,21 @@
-HELP.md
+# --- Maven / Build Generated Files ---
+# Ignores the 'target' folder where compiled files (.class, .jar) are stored.
 target/
+# Standard Spring Boot help file (optional to ignore)
+HELP.md
+
+# --- Maven Wrapper ---
+# Generally, it is good practice to commit the wrapper so others can run the project.
+# But if you want to ignore the jar specifically, keep this line:
 .mvn/wrapper/maven-wrapper.jar
-!**/src/main/**/target/
-!**/src/test/**/target/
+
+# --- Security (CRITICAL) ---
+# Ignores the file containing the API Key.
+# This ensures your password/key is NEVER uploaded to GitHub.
 secrets.properties
 
-### STS ###
+# --- IDE: Eclipse / Spring Tool Suite (STS) ---
+# Ignores project settings specific to Eclipse-based IDEs.
 .apt_generated
 .classpath
 .factorypath
@@ -13,22 +23,28 @@ secrets.properties
 .settings
 .springBeans
 .sts4-cache
+bin/
 
-### IntelliJ IDEA ###
+# --- IDE: IntelliJ IDEA ---
+# Ignores project settings specific to JetBrains IntelliJ.
 .idea
 *.iws
 *.iml
 *.ipr
 
-### NetBeans ###
+# --- IDE: VS Code ---
+# Ignores project settings specific to Visual Studio Code.
+.vscode/
+
+# --- IDE: NetBeans ---
+# Ignores project settings specific to NetBeans.
 /nbproject/private/
 /nbbuild/
 /dist/
 /nbdist/
 /.nb-gradle/
 build/
-!**/src/main/**/build/
-!**/src/test/**/build/
 
-### VS Code ###
-.vscode/
+# --- Mac OS System Files ---
+# Just in case you or a colleague uses a Mac
+.DS_Store

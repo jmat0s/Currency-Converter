@@ -1,2 +1,6 @@
+# --- Maven Wrapper Line Endings ---
+# Ensures the Unix script uses LF (Line Feed), otherwise it fails on Linux/Mac with "^M" errors.
 /mvnw text eol=lf
+
+# Ensures the Windows batch script uses CRLF (Carriage Return + Line Feed).
 *.cmd text eol=crlf
