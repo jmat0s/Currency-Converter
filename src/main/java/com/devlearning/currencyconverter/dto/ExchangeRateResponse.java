@@ -15,6 +15,7 @@ import java.math.BigDecimal;
  * @param conversionResult The final calculated amount returned by the API (if applicable).
  * Mapped from the JSON field "conversion_result".
  */
+
 public record ExchangeRateResponse(
     String result,
     
