@@ -15,6 +15,8 @@ import java.util.List;
 import com.devlearning.currencyconverter.model.User;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+
+import org.springframework.web.client.HttpClientErrorException;
 // ...
 
 /**
@@ -66,39 +68,70 @@ public class ExchangeService {
      * @return The saved ConversionHistory entity containing all transaction details.
      */
     public ConversionHistory convertCurrency(String from, String to, BigDecimal amount) {
-        
-        // 1. Build the External API URL dynamically
-        // Pattern: https://v6.exchangerate-api.com/v6/{KEY}/pair/{FROM}/{TO}
-        String url = apiUrl + apiKey + "/pair/" + from + "/" + to;
 
-        // 2. Execute the HTTP GET request
-        // RestTemplate maps the JSON response directly to our ExchangeRateResponse DTO
-        ExchangeRateResponse response = restTemplate.getForObject(url, ExchangeRateResponse.class);
+        // --- OTIMIZAÇÃO: Se as moedas forem iguais, não chame a API ---
+        if (from.equalsIgnoreCase(to)) {
+            // Pegar usuário (código repetido, mas necessário aqui)
+            String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
+            User currentUser = userRepository.findByUsername(currentUsername)
+                    .orElseThrow(() -> new RuntimeException("Usuário não encontrado!"));
 
-        // 3. Validate the response
-        if (response == null || !"success".equals(response.result())) {
-            throw new RuntimeException("Failed to fetch exchange rates from external API.");
+            ConversionHistory sameCurrencyTransaction = new ConversionHistory(
+                    currentUser,
+                    from,
+                    to,
+                    amount,
+                    amount, // Convertido é igual ao original
+                    BigDecimal.ONE // Taxa é 1.0
+            );
+            return repository.save(sameCurrencyTransaction);
         }
 
-        // 4. Perform the Calculation (Business Logic)
+        // 1. Build the External API URL
+        String url = apiUrl + apiKey + "/pair/" + from + "/" + to;
+
+        ExchangeRateResponse response;
+
+        // --- INÍCIO DO TRY-CATCH ---
+        try {
+            // Tenta chamar a API. Se a moeda for "ZZZ", a API devolve erro 404 e o código pula para o CATCH.
+            response = restTemplate.getForObject(url, ExchangeRateResponse.class);
+            
+        } catch (HttpClientErrorException e) {
+            // Captura erros 4xx (ex: 404 Not Found se a moeda não existir)
+            throw new IllegalArgumentException("Moeda inválida ou não suportada: " + from + " ou " + to);
+            
+        } catch (Exception e) {
+            // Captura qualquer outro erro (ex: Sem internet, API fora do ar)
+            throw new RuntimeException("Erro ao comunicar com o serviço de câmbio.");
+        }
+        // --- FIM DO TRY-CATCH ---
+
+        // 3. Validate the response (Segurança extra caso a API responda 200 OK mas com erro no corpo)
+        if (response == null || !"success".equals(response.result())) {
+            throw new RuntimeException("Falha ao obter dados da API externa.");
+        }
+
+        // 4. Perform the Calculation
         BigDecimal rate = response.conversionRate();
         BigDecimal convertedAmount = amount.multiply(rate);
 
+        // Pega o usuário logado
         String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
+        User currentUser = userRepository.findByUsername(currentUsername)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado!"));
 
-        User currentUser = userRepository.findByUsername(currentUsername).orElseThrow(() -> new RuntimeException("Usuário não encontrado!"));
-
-        // 5. Create the Entity object to be persisted
+        // 5. Create the Entity
         ConversionHistory transaction = new ConversionHistory(
                 currentUser,
-                from, 
-                to, 
-                amount, 
-                convertedAmount, 
+                from,
+                to,
+                amount,
+                convertedAmount,
                 rate
         );
 
-        // 6. Save to Database and return the result
+        // 6. Save and return
         return repository.save(transaction);
     }
 

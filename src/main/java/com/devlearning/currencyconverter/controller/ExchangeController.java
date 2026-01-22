@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 
+import jakarta.validation.Valid;
+
 /**
  * REST Controller responsible for handling currency exchange requests.
  * Exposes endpoints for real-time conversion and retrieving transaction history.
@@ -38,7 +40,7 @@ public class ExchangeController {
      * @return the transaction details including the exchange rate and converted amount.
      */
     @PostMapping("/convert")
-    public ResponseEntity<ConversionHistory> convertCurrency(@RequestBody ConversionRequest request) {
+    public ResponseEntity<ConversionHistory> convertCurrency(@Valid @RequestBody ConversionRequest request) {
         ConversionHistory result = exchangeService.convertCurrency(
                 request.fromCurrency(),
                 request.toCurrency(),
