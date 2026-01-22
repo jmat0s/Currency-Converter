@@ -3,12 +3,19 @@ package com.devlearning.currencyconverter.service;
 import com.devlearning.currencyconverter.dto.ExchangeRateResponse;
 import com.devlearning.currencyconverter.model.ConversionHistory;
 import com.devlearning.currencyconverter.repository.ConversionHistoryRepository;
+import com.devlearning.currencyconverter.repository.UserRepository;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
 import java.util.List;
+
+import com.devlearning.currencyconverter.model.User;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+// ...
 
 /**
  * Service layer responsible for business logic regarding currency exchange.
@@ -22,6 +29,7 @@ public class ExchangeService {
     // Dependencies
     private final RestTemplate restTemplate;
     private final ConversionHistoryRepository repository;
+    private final UserRepository userRepository;
 
     // Configuration values injected from application.properties
     // This keeps the URL and Key flexible without hardcoding them in Java.
@@ -37,9 +45,10 @@ public class ExchangeService {
      * @param restTemplate The utility to make HTTP requests to the external API.
      * @param repository   The Data Access Object to save transactions.
      */
-    public ExchangeService(RestTemplate restTemplate, ConversionHistoryRepository repository) {
+    public ExchangeService(RestTemplate restTemplate, ConversionHistoryRepository repository,UserRepository userRepository) {
         this.restTemplate = restTemplate;
         this.repository = repository;
+        this.userRepository = userRepository;
     }
 
     /**
@@ -75,8 +84,13 @@ public class ExchangeService {
         BigDecimal rate = response.conversionRate();
         BigDecimal convertedAmount = amount.multiply(rate);
 
+        String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        User currentUser = userRepository.findByUsername(currentUsername).orElseThrow(() -> new RuntimeException("Usuário não encontrado!"));
+
         // 5. Create the Entity object to be persisted
         ConversionHistory transaction = new ConversionHistory(
+                currentUser,
                 from, 
                 to, 
                 amount, 
@@ -93,7 +107,8 @@ public class ExchangeService {
      *
      * @return A list of all ConversionHistory records.
      */
-    public List<ConversionHistory> findAllHistory() {
-        return repository.findAll();
+    public List<ConversionHistory> findAllHistoryForCurrentUser() {
+        String currentUserName = SecurityContextHolder.getContext().getAuthentication().getName();
+        return repository.findByUserUsername(currentUserName);
     }
 }

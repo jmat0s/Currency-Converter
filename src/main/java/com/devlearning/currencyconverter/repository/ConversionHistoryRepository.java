@@ -4,6 +4,8 @@ import com.devlearning.currencyconverter.model.ConversionHistory;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 /**
  * Repository interface for Data Access Layer (DAO).
  * <p>
@@ -20,4 +22,5 @@ import org.springframework.stereotype.Repository;
 public interface ConversionHistoryRepository extends JpaRepository<ConversionHistory, Long> {
     // No implementation logic is needed here. 
     // Spring Data JPA generates the implementation code at runtime (Proxy Pattern).
+    List<ConversionHistory> findByUserUsername(String username);
 }

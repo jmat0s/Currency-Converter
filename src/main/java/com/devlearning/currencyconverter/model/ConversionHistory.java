@@ -59,6 +59,11 @@ public class ConversionHistory {
      */
     private LocalDateTime timestamp;
 
+    @ManyToOne
+    @JoinColumn(name="user_id", nullable = false)
+    private User user;
+
+
     // --- Constructors ---
 
     /**
@@ -77,7 +82,8 @@ public class ConversionHistory {
      * @param convertedAmount The result calculated by the service.
      * @param exchangeRate   The rate fetched from the external API.
      */
-    public ConversionHistory(String fromCurrency, String toCurrency, BigDecimal originalAmount, BigDecimal convertedAmount, BigDecimal exchangeRate) {
+    public ConversionHistory(User user,String fromCurrency, String toCurrency, BigDecimal originalAmount, BigDecimal convertedAmount, BigDecimal exchangeRate) {
+        this.user=user;
         this.fromCurrency = fromCurrency;
         this.toCurrency = toCurrency;
         this.originalAmount = originalAmount;
@@ -107,4 +113,7 @@ public class ConversionHistory {
     
     public LocalDateTime getTimestamp() { return timestamp; }
     public void setTimestamp(LocalDateTime timestamp) { this.timestamp = timestamp; }
+
+    public User getUser(){return user;}
+    public void setUser(User user){this.user=user;}
 }

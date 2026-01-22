@@ -56,7 +56,7 @@ public class ExchangeController {
      */
     @GetMapping("/history")
     public ResponseEntity<List<ConversionHistory>> getHistory() {
-        return ResponseEntity.ok(exchangeService.findAllHistory());
+        return ResponseEntity.ok(exchangeService.findAllHistoryForCurrentUser());
     }
 
     /**
